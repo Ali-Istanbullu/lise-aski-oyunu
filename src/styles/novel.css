@@ -71,22 +71,25 @@
   backdrop-filter: blur(10px);
 }
 
-/* ── Dialogue Box ────────────────────────────────────── */
 .dialogue-box {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 92%;
+  max-width: 1000px;
   min-height: 160px;
   background: linear-gradient(
     135deg,
     rgba(14, 10, 26, 0.97),
     rgba(22, 17, 42, 0.97)
   );
-  border-top: 1px solid var(--color-border);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   padding: var(--space-md) var(--space-xl) var(--space-xl);
   backdrop-filter: blur(20px);
   cursor: pointer;
+  box-shadow: var(--shadow-card);
 }
 
 .dialogue-box::before {
