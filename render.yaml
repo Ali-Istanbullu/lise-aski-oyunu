@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: lise-aski-backend
+    env: node
+    region: frankfurt
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES
+        value: 7d
+      - key: FRONTEND_URL
+        value: https://YOUR-GITHUB-PAGES-URL.github.io

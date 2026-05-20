@@ -1,0 +1,59 @@
+name: CI — Test & Lint (Backend)
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: 🧪 Backend Tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+        working-directory: backend
+
+      - name: 🧪 Unit Tests
+        run: npm run test:unit
+        working-directory: backend
+        env:
+          NODE_ENV: test
+
+      - name: 🔗 Integration Tests
+        run: npm run test:integration
+        working-directory: backend
+        env:
+          NODE_ENV: test
+
+      - name: 📊 Coverage (min %80)
+        run: npm run coverage
+        working-directory: backend
+        env:
+          NODE_ENV: test
+
+      - name: 📤 Upload Coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-node${{ matrix.node-version }}
+          path: backend/coverage/

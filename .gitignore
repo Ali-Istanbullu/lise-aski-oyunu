@@ -1,0 +1,31 @@
+# ── Node ─────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-error.log
+*.log
+
+# ── Build / Coverage ──────────────────────────────────────
+backend/coverage/
+dist/
+
+# ── Database ──────────────────────────────────────────────
+backend/data/*.db
+backend/data/*.db-wal
+backend/data/*.db-shm
+
+# ── Environment ───────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# ── OS ────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Editor ───────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo

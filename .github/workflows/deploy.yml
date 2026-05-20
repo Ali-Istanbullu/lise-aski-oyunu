@@ -1,0 +1,42 @@
+name: Deploy — Render Production
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  # ── CI Testleri Geçmeden Deploy Yok ───────────────────
+  test:
+    name: ✅ Pre-deploy Tests
+    uses: ./.github/workflows/ci.yml
+
+  deploy:
+    name: 🚀 Deploy to Render
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🚀 Trigger Render Deploy
+        run: |
+          curl -s -X POST \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"serviceId": "${{ secrets.RENDER_SERVICE_ID }}"}' \
+            "https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys"
+        # Render'da RENDER_API_KEY ve RENDER_SERVICE_ID secret olarak eklenmeli
+
+      - name: ⏳ Wait for Deploy
+        run: sleep 60
+
+      - name: 🏥 Health Check
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "${{ secrets.RENDER_BACKEND_URL }}/health")
+          if [ "$STATUS" != "200" ]; then
+            echo "❌ Health check failed: HTTP $STATUS"
+            exit 1
+          fi
+          echo "✅ Health check passed"

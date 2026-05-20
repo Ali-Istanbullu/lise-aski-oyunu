@@ -1,0 +1,355 @@
+/* ═══════════════════════════════════════════════════════
+   novel.css — Oyun Ekranı (Visual Novel UI)
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Game Background ─────────────────────────────────── */
+.game-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: background-image var(--transition-slow);
+}
+
+.game-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(10, 6, 20, 0.1) 0%,
+    rgba(10, 6, 20, 0) 40%,
+    rgba(10, 6, 20, 0.7) 80%,
+    rgba(10, 6, 20, 0.95) 100%
+  );
+}
+
+/* ── Characters ──────────────────────────────────────── */
+.character {
+  position: absolute;
+  bottom: 160px;
+  width: 340px;
+  height: 480px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: bottom center;
+  transition: all var(--transition-slow);
+  filter: drop-shadow(0 10px 30px rgba(0,0,0,0.6));
+}
+
+.char-left  { left: 5%; }
+.char-right { right: 5%; }
+
+.character.entering {
+  animation: char-enter 0.5s ease-out forwards;
+}
+
+.character.dimmed {
+  filter: brightness(0.5) drop-shadow(0 10px 30px rgba(0,0,0,0.6));
+}
+
+@keyframes char-enter {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Scene Chapter Label ─────────────────────────────── */
+.scene-chapter {
+  position: absolute;
+  top: var(--space-xl);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(22, 17, 42, 0.85);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: var(--space-xs) var(--space-lg);
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  backdrop-filter: blur(10px);
+}
+
+/* ── Dialogue Box ────────────────────────────────────── */
+.dialogue-box {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  min-height: 160px;
+  background: linear-gradient(
+    135deg,
+    rgba(14, 10, 26, 0.97),
+    rgba(22, 17, 42, 0.97)
+  );
+  border-top: 1px solid var(--color-border);
+  padding: var(--space-md) var(--space-xl) var(--space-xl);
+  backdrop-filter: blur(20px);
+  cursor: pointer;
+}
+
+.dialogue-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--color-primary), transparent);
+  opacity: 0.5;
+}
+
+.dialogue-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-sm);
+}
+
+.dialogue-speaker {
+  font-family: var(--font-story);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 15px var(--color-primary-glow);
+  min-height: 1.5em;
+}
+
+.dialogue-menu-btn {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all var(--transition-fast);
+}
+
+.dialogue-menu-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.dialogue-text {
+  font-family: var(--font-story);
+  font-size: 1.05rem;
+  line-height: 1.9;
+  color: var(--color-text);
+  min-height: 3em;
+}
+
+.dialogue-cursor {
+  text-align: right;
+  color: var(--color-primary);
+  font-size: 0.8rem;
+  opacity: 0.7;
+  animation: blink 1.2s ease-in-out infinite;
+  margin-top: var(--space-xs);
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 0.7; }
+  50%       { opacity: 0; }
+}
+
+/* ── Choices ─────────────────────────────────────────── */
+.choices-container {
+  position: absolute;
+  bottom: 200px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  z-index: 20;
+}
+
+.choice-btn {
+  width: 100%;
+  padding: var(--space-md) var(--space-xl);
+  background: rgba(14, 10, 26, 0.92);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-family: var(--font-story);
+  font-size: 1rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  backdrop-filter: blur(20px);
+  position: relative;
+  overflow: hidden;
+  animation: choice-appear 0.3s ease forwards;
+  opacity: 0;
+}
+
+.choice-btn:nth-child(1) { animation-delay: 0.05s; }
+.choice-btn:nth-child(2) { animation-delay: 0.15s; }
+.choice-btn:nth-child(3) { animation-delay: 0.25s; }
+
+@keyframes choice-appear {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.choice-btn::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--color-primary);
+  transform: scaleY(0);
+  transition: transform var(--transition-base);
+  border-radius: 2px 0 0 2px;
+}
+
+.choice-btn:hover {
+  border-color: var(--color-primary);
+  background: rgba(245, 200, 66, 0.1);
+  transform: translateX(4px);
+  color: var(--color-primary);
+}
+
+.choice-btn:hover::before {
+  transform: scaleY(1);
+}
+
+/* ── Progress Bar ────────────────────────────────────── */
+.progress-bar-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(255,255,255,0.05);
+  display: flex;
+  align-items: center;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(to right, var(--color-secondary), var(--color-primary));
+  transition: width var(--transition-slow);
+  border-radius: 0 2px 2px 0;
+  box-shadow: 0 0 10px var(--color-primary-glow);
+}
+
+.progress-text {
+  position: absolute;
+  right: var(--space-md);
+  top: 6px;
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.1em;
+}
+
+/* ── Save Indicator ──────────────────────────────────── */
+.save-indicator {
+  position: absolute;
+  top: var(--space-xl);
+  right: var(--space-xl);
+  background: rgba(22, 17, 42, 0.9);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: var(--space-xs) var(--space-md);
+  font-size: 0.78rem;
+  color: var(--color-success);
+  backdrop-filter: blur(10px);
+  animation: fade-in-out 2s ease forwards;
+}
+
+@keyframes fade-in-out {
+  0%   { opacity: 0; transform: translateY(-5px); }
+  20%  { opacity: 1; transform: translateY(0); }
+  80%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ── Ending Screen ───────────────────────────────────── */
+.ending-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, #1a0a2e 0%, #0d0a14 70%);
+  overflow: hidden;
+}
+
+.ending-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.ending-content {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: var(--space-2xl);
+  text-align: center;
+  animation: ending-reveal 1.5s ease forwards;
+}
+
+@keyframes ending-reveal {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ending-badge {
+  font-size: 5rem;
+  margin-bottom: var(--space-xl);
+  filter: drop-shadow(0 0 30px rgba(245,200,66,0.5));
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.ending-title {
+  font-family: var(--font-story);
+  font-size: 2.5rem;
+  color: var(--color-primary);
+  margin-bottom: var(--space-lg);
+  text-shadow: 0 0 40px var(--color-primary-glow);
+}
+
+.ending-text {
+  font-family: var(--font-story);
+  font-size: 1.1rem;
+  color: var(--color-text);
+  line-height: 2;
+  max-width: 600px;
+  margin-bottom: var(--space-2xl);
+  opacity: 0.9;
+}
+
+.ending-actions {
+  display: flex;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  .character {
+    width: 220px;
+    height: 320px;
+    bottom: 180px;
+  }
+
+  .dialogue-text { font-size: 0.95rem; }
+  .menu-title    { font-size: 2.5rem; }
+  .menu-content  { padding: var(--space-xl) var(--space-lg); }
+
+  .choices-container {
+    bottom: 220px;
+    width: 95%;
+  }
+}
