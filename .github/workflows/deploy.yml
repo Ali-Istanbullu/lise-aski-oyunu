@@ -1,42 +1,45 @@
-name: Deploy — Render Production
+name: Deploy — Render (Backend)
 
 on:
   push:
     branches: [main]
+    paths:
+      - 'backend/**'
+  workflow_dispatch:
 
 jobs:
-  # ── CI Testleri Geçmeden Deploy Yok ───────────────────
   test:
-    name: ✅ Pre-deploy Tests
-    uses: ./.github/workflows/ci.yml
+    name: ✅ Backend Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: npm test
+        working-directory: backend
+        env:
+          NODE_ENV: test
 
-  deploy:
-    name: 🚀 Deploy to Render
+  deploy-backend:
+    name: 🚀 Render Deploy
     needs: test
     runs-on: ubuntu-latest
-
+    # Sadece RENDER_API_KEY secret tanımlıysa çalış
+    if: ${{ vars.RENDER_DEPLOY_ENABLED == 'true' }}
     steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
-
       - name: 🚀 Trigger Render Deploy
         run: |
           curl -s -X POST \
             -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
-            -H "Content-Type: application/json" \
-            -d '{"serviceId": "${{ secrets.RENDER_SERVICE_ID }}"}' \
             "https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys"
-        # Render'da RENDER_API_KEY ve RENDER_SERVICE_ID secret olarak eklenmeli
-
-      - name: ⏳ Wait for Deploy
-        run: sleep 60
 
       - name: 🏥 Health Check
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            "${{ secrets.RENDER_BACKEND_URL }}/health")
-          if [ "$STATUS" != "200" ]; then
-            echo "❌ Health check failed: HTTP $STATUS"
-            exit 1
-          fi
-          echo "✅ Health check passed"
+          sleep 60
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.RENDER_BACKEND_URL }}/health")
+          [ "$STATUS" = "200" ] && echo "✅ OK" || (echo "❌ HTTP $STATUS" && exit 1)
