@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Lise Aşkı — Web tabanlı görsel roman oyunu. Seçimlerinle şekillenen bir lise aşk hikayesi." />
+  <title>Lise Aşkı 💛 — Görsel Roman</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="src/styles/main.css" />
+  <link rel="stylesheet" href="src/styles/auth.css" />
+  <link rel="stylesheet" href="src/styles/novel.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  AUTH SCREEN                                -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="auth-screen" class="screen active">
+    <div class="auth-bg">
+      <div class="auth-particles" id="auth-particles"></div>
+    </div>
+    <div class="auth-container">
+      <div class="auth-logo">
+        <span class="auth-logo-icon">💛</span>
+        <h1 class="auth-logo-title">Lise Aşkı</h1>
+        <p class="auth-logo-sub">Seçimlerinle şekillenen bir hikaye</p>
+      </div>
+
+      <!-- Tab Switcher — bridge: _app.showTab() -->
+      <div class="auth-tabs">
+        <button id="tab-login"    class="auth-tab active" onclick="_app.showTab('login')">Giriş Yap</button>
+        <button id="tab-register" class="auth-tab"        onclick="_app.showTab('register')">Kayıt Ol</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form" class="auth-form active" onsubmit="_app.handleLogin(event)">
+        <div class="form-group">
+          <label for="login-email">E-mail</label>
+          <input id="login-email" type="email" placeholder="ornek@mail.com" required autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label for="login-password">Şifre</label>
+          <input id="login-password" type="password" placeholder="••••••••" required autocomplete="current-password" />
+        </div>
+        <div id="login-error" class="form-error hidden"></div>
+        <button id="login-btn" type="submit" class="btn-primary">
+          <span class="btn-text">Giriş Yap</span>
+          <span class="btn-loading hidden">⏳</span>
+        </button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="register-form" class="auth-form hidden" onsubmit="_app.handleRegister(event)">
+        <div class="form-group">
+          <label for="register-username">Kullanıcı Adı</label>
+          <input id="register-username" type="text" placeholder="kerem" required minlength="3" autocomplete="username" />
+        </div>
+        <div class="form-group">
+          <label for="register-email">E-mail</label>
+          <input id="register-email" type="email" placeholder="ornek@mail.com" required autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label for="register-password">Şifre</label>
+          <input id="register-password" type="password" placeholder="En az 6 karakter" required minlength="6" autocomplete="new-password" />
+        </div>
+        <div id="register-error" class="form-error hidden"></div>
+        <button id="register-btn" type="submit" class="btn-primary">
+          <span class="btn-text">Kayıt Ol</span>
+          <span class="btn-loading hidden">⏳</span>
+        </button>
+      </form>
+
+      <p class="auth-footer">Devam ederek <a href="#">Kullanım Şartları</a>'nı kabul etmiş olursunuz.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  MAIN MENU SCREEN                           -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="menu-screen" class="screen hidden">
+    <div class="menu-bg">
+      <div class="menu-overlay"></div>
+      <img class="menu-bg-img" src="assets/backgrounds/classroom.png" alt="" />
+    </div>
+    <div class="menu-content">
+      <div class="menu-title-block">
+        <span class="menu-heart">💛</span>
+        <h1 class="menu-title">Lise Aşkı</h1>
+        <p class="menu-subtitle">Görsel Roman</p>
+      </div>
+
+      <!-- bridge: _app.continueGame() / _app.startNewGame() / _app.logout() -->
+      <nav class="menu-nav">
+        <button id="btn-continue" class="menu-btn menu-btn-primary hidden" onclick="_app.continueGame()">
+          📖 Devam Et
+          <span id="continue-scene-label" class="menu-btn-sub"></span>
+        </button>
+        <button id="btn-new-game" class="menu-btn" onclick="_app.startNewGame()">✨ Yeni Oyun</button>
+        <button id="btn-logout"   class="menu-btn menu-btn-danger" onclick="_app.logout()">🚪 Çıkış Yap</button>
+      </nav>
+
+      <div class="menu-user">
+        Hoş geldin, <strong id="menu-username">Oyuncu</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  GAME SCREEN                                -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="game-screen" class="screen hidden">
+    <div id="game-bg" class="game-bg"></div>
+    <div id="char-left"  class="character char-left hidden"></div>
+    <div id="char-right" class="character char-right hidden"></div>
+    <div id="scene-chapter" class="scene-chapter"></div>
+
+    <!-- bridge: _app.goToMenu() -->
+    <div id="dialogue-box" class="dialogue-box" role="dialog" aria-live="polite">
+      <div class="dialogue-header">
+        <span id="dialogue-speaker" class="dialogue-speaker"></span>
+        <button id="btn-menu" class="dialogue-menu-btn" onclick="_app.goToMenu()" title="Menüye Dön">☰</button>
+      </div>
+      <div id="dialogue-text" class="dialogue-text"></div>
+      <div id="dialogue-cursor" class="dialogue-cursor">▼</div>
+    </div>
+
+    <div id="choices-container" class="choices-container hidden" role="group" aria-label="Seçimler"></div>
+    <div id="save-indicator" class="save-indicator hidden">💾 Kaydediliyor...</div>
+
+    <div class="progress-bar-container">
+      <div id="progress-bar" class="progress-bar"></div>
+      <span id="progress-text" class="progress-text"></span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  ENDING SCREEN                              -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="ending-screen" class="screen hidden">
+    <div class="ending-bg">
+      <div id="ending-particles" class="ending-particles"></div>
+    </div>
+    <div class="ending-content">
+      <div id="ending-badge"  class="ending-badge"></div>
+      <h2 id="ending-title"   class="ending-title"></h2>
+      <p  id="ending-text"    class="ending-text"></p>
+      <div class="ending-actions">
+        <button class="btn-primary"   onclick="_app.goToMenu()">🏠 Ana Menü</button>
+        <button class="btn-secondary" onclick="_app.startNewGame()">🔄 Tekrar Oyna</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  SCRIPTS — Yükleme Sırası Önemli            -->
+  <!--  1. Altyapı  2. Interface  3. Impl  4. App  -->
+  <!-- ═══════════════════════════════════════════ -->
+
+  <!-- Altyapı -->
+  <script src="src/config.js"></script>
+  <script src="src/core/EventBus.js"></script>
+  <script src="src/core/Container.js"></script>
+
+  <!-- Interface Sözleşmeleri -->
+  <script src="src/interfaces/IAuthService.js"></script>
+  <script src="src/interfaces/IGameService.js"></script>
+  <script src="src/interfaces/IRenderers.js"></script>
+
+  <!-- API Katmanı -->
+  <script src="src/api/ApiClient.js"></script>
+
+  <!-- Servis Katmanı -->
+  <script src="src/services/AuthService.js"></script>
+  <script src="src/services/GameService.js"></script>
+
+  <!-- Engine Katmanı -->
+  <script src="src/engine/DialogueBox.js"></script>
+  <script src="src/engine/SceneManager.js"></script>
+  <script src="src/engine/GameEngine.js"></script>
+
+  <!-- Auth -->
+  <script src="src/auth/AuthManager.js"></script>
+
+  <!-- UI -->
+  <script src="src/ui/UIController.js"></script>
+
+  <!-- Composition Root — En son yüklenir -->
+  <script src="src/app.js"></script>
+
+</body>
+</html>
