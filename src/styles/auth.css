@@ -41,9 +41,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start; /* Ortalamayı kaldır, taşmayı önle */
   min-height: 100dvh;
-  padding: var(--space-xl) var(--space-md);
+  padding: 8vh var(--space-md) var(--space-xl);
 }
 
 /* ── Logo ────────────────────────────────────────────── */
