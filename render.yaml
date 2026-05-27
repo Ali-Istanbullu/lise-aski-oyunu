@@ -8,6 +8,11 @@ services:
     buildCommand: npm install
     startCommand: node server.js
     healthCheckPath: /health
+    # Kalıcı disk — SQLite verisi sunucu yeniden başlayınca kaybolmaz
+    disk:
+      name: lise-aski-db
+      mountPath: /data
+      sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production
@@ -17,3 +22,6 @@ services:
         value: 7d
       - key: FRONTEND_URL
         value: https://YOUR-GITHUB-PAGES-URL.github.io
+      # DB_PATH kalıcı diske yönlendirildi
+      - key: DB_PATH
+        value: /data/game.db

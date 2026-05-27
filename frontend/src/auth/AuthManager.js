@@ -44,16 +44,18 @@ class AuthManager {
     const password = document.getElementById('register-password').value;
     const btn      = document.getElementById('register-btn');
 
-    this._setLoading(btn, true);
     this._clearErrors();
+    this._setLoading(btn, true);
 
+    let errorMsg = null;
     try {
       const result = await this._auth.register(username, email, password);
       await this._onAuthSuccess(result.user);
     } catch (err) {
-      this._showError('register-error', err.message);
+      errorMsg = err.message;
     } finally {
       this._setLoading(btn, false);
+      if (errorMsg) this._showError('register-error', errorMsg);
     }
   }
 
@@ -64,16 +66,18 @@ class AuthManager {
     const password = document.getElementById('login-password').value;
     const btn      = document.getElementById('login-btn');
 
-    this._setLoading(btn, true);
     this._clearErrors();
+    this._setLoading(btn, true);
 
+    let errorMsg = null;
     try {
       const result = await this._auth.login(email, password);
       await this._onAuthSuccess(result.user);
     } catch (err) {
-      this._showError('login-error', err.message);
+      errorMsg = err.message;
     } finally {
       this._setLoading(btn, false);
+      if (errorMsg) this._showError('login-error', errorMsg);
     }
   }
 
