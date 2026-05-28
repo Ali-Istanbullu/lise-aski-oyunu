@@ -66,6 +66,10 @@ class GameEngine {
     await this._loadScene(save.sceneId);
   }
 
+  get saveData() {
+    return this._state.saveData;
+  }
+
   // ── Menüye Dön ────────────────────────────────────────
   goToMenu() {
     this._removeInputListeners();
