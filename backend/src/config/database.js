@@ -13,9 +13,23 @@ let pool = null;
 function getDatabase() {
   if (pool) return pool;
 
-  const connectionString = process.env.DATABASE_URL;
+  let connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
     throw new Error('DATABASE_URL environment variable is missing.');
+  }
+
+  // Supabase ham şifrelerinde [, ], ^ gibi özel karakterler olabilir.
+  // pg kütüphanesi new URL() kullandığı için bu karakterler Invalid URL hatası fırlatır.
+  try {
+    new URL(connectionString);
+  } catch (e) {
+    const match = connectionString.match(/^postgresql:\/\/([^:]+):([^@]+)@(.+)$/);
+    if (match) {
+      const user = match[1];
+      const rawPassword = match[2];
+      const rest = match[3];
+      connectionString = `postgresql://${user}:${encodeURIComponent(rawPassword)}@${rest}`;
+    }
   }
 
   pool = new Pool({
