@@ -46,7 +46,7 @@ class SaveRepository {
         choices = EXCLUDED.choices,
         flags = EXCLUDED.flags,
         updated_at = CURRENT_TIMESTAMP
-    `, [userId, sceneId, choices, flags]);
+    `, [userId, sceneId, JSON.stringify(choices || {}), JSON.stringify(flags || {})]);
   }
 
   /**
