@@ -3,6 +3,7 @@
  * SOLID: Single Responsibility — Sadece app konfigürasyonu
  */
 
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');

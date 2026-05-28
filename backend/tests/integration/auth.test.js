@@ -6,15 +6,29 @@ process.env.NODE_ENV = 'test';
 
 const request = require('supertest');
 const app = require('../../src/app');
-const { resetDatabase } = require('../../src/config/database');
+const { getDatabase, resetDatabase } = require('../../src/config/database');
 
 describe('Auth Integration Tests', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     resetDatabase();
+    const db = getDatabase();
+    try {
+      await db.query("DELETE FROM game_saves WHERE user_id IN (SELECT id FROM users WHERE email LIKE '%@test.com' OR username LIKE 'kerem%')");
+      await db.query("DELETE FROM users WHERE email LIKE '%@test.com' OR username LIKE 'kerem%'");
+    } catch (err) {
+      console.warn('[Test Cleanup] Warning during database cleanup:', err.message);
+    }
   });
 
-  afterAll(() => {
-    resetDatabase();
+  afterAll(async () => {
+    const db = getDatabase();
+    try {
+      await db.query("DELETE FROM game_saves WHERE user_id IN (SELECT id FROM users WHERE email LIKE '%@test.com' OR username LIKE 'kerem%')");
+      await db.query("DELETE FROM users WHERE email LIKE '%@test.com' OR username LIKE 'kerem%'");
+    } catch (err) {
+      // ignore
+    }
+    await resetDatabase();
   });
 
   describe('POST /api/auth/register', () => {
