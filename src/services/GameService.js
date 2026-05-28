@@ -33,6 +33,10 @@ class GameService {
     return this._api.gameResetSave();
   }
 
+  clearCache() {
+    this._api.clearSceneCache();
+  }
+
   /**
    * @param {number} sceneId
    * @param {object} currentChoices

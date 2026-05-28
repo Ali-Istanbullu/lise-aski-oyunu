@@ -92,19 +92,25 @@ class ApiClient {
     });
   }
 
+  clearSceneCache() {
+    this._sceneCache.clear();
+  }
+
   async gameResetSave() {
+    this.clearSceneCache();
     return this.request('/api/game/save', { method: 'DELETE' });
   }
 
   async gameGetScene(sceneId, choices = {}) {
-    const cacheKey = `scene_${sceneId}`;
+    const choicesKey = JSON.stringify(choices);
+    const cacheKey = `scene_${sceneId}_${choicesKey}`;
     // Cache hit — anında dön
     if (this._sceneCache.has(cacheKey)) {
       return this._sceneCache.get(cacheKey);
     }
-    const q = `?choices=${encodeURIComponent(JSON.stringify(choices))}`;
+    const q = `?choices=${encodeURIComponent(choicesKey)}`;
     const data = await this.request(`/api/game/scene/${sceneId}${q}`);
-    // Cache'e yaz — sahneler hiç değişmez
+    // Cache'e yaz
     this._sceneCache.set(cacheKey, data);
     return data;
   }
