@@ -25,6 +25,11 @@ const IGameService = {
   resetSave: async () => { throw new Error('resetSave() implement edilmeli'); },
 
   /**
+   * Önbelleği temizle
+   */
+  clearCache: () => { throw new Error('clearCache() implement edilmeli'); },
+
+  /**
    * @param {number} sceneId
    * @param {object} currentChoices
    * @returns {Promise<{scene: object}>}

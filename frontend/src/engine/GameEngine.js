@@ -49,6 +49,8 @@ class GameEngine {
       if (!confirmed) return;
       try { await this._game.resetSave(); } catch (_) {}
     }
+    this._game.clearCache();
+    this._bus.publish('game:hide-choices', {});
     this._state = this._defaultState();
     this._bus.publish('ui:show-screen', { screen: 'game-screen' });
     await this._loadScene(1);
@@ -73,11 +75,13 @@ class GameEngine {
   // ── Menüye Dön ────────────────────────────────────────
   goToMenu() {
     this._removeInputListeners();
+    this._bus.publish('game:hide-choices', {});
     this._bus.publish('ui:show-screen', { screen: 'menu-screen' });
   }
 
   // ── Sahne Yükle ───────────────────────────────────────
   async _loadScene(sceneId) {
+    this._bus.publish('game:hide-choices', {});
     try {
       const { scene } = await this._game.getScene(sceneId, this._state.choices);
       this._state.currentScene    = scene;
