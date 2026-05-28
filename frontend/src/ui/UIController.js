@@ -19,6 +19,9 @@ class UIController {
   _registerSubscriptions() {
     // Ekran geçişi
     this._bus.subscribe('ui:show-screen', ({ screen }) => {
+      if (screen === 'menu-screen') {
+        this._updateContinueButton(this._engine.saveData);
+      }
       this._showScreen(screen);
     });
 
@@ -26,15 +29,7 @@ class UIController {
     this._bus.subscribe('auth:login-success', ({ user, save }) => {
       document.getElementById('menu-username').textContent = user.username;
 
-      const continueBtn  = document.getElementById('btn-continue');
-      const sceneLabel   = document.getElementById('continue-scene-label');
-
-      if (save?.sceneId > 1) {
-        continueBtn.classList.remove('hidden');
-        sceneLabel.textContent = `Sahne ${save.sceneId}'den devam et`;
-      } else {
-        continueBtn.classList.add('hidden');
-      }
+      this._updateContinueButton(save);
 
       // GameEngine'e save verisini ilet
       this._bus.publish('auth:save-loaded', { save: save || { sceneId: 1 } });
@@ -61,6 +56,19 @@ class UIController {
     this._bus.subscribe('game:ending', ({ scene }) => {
       this._showEnding(scene);
     });
+  }
+
+  // ── Devam Et Butonunu Güncelle ─────────────────────────
+  _updateContinueButton(save) {
+    const continueBtn  = document.getElementById('btn-continue');
+    const sceneLabel   = document.getElementById('continue-scene-label');
+
+    if (save && save.sceneId > 1) {
+      continueBtn.classList.remove('hidden');
+      sceneLabel.textContent = `Sahne ${save.sceneId}'den devam et`;
+    } else {
+      continueBtn.classList.add('hidden');
+    }
   }
 
   // ── Ekran Geçişi ──────────────────────────────────────
