@@ -1,6 +1,6 @@
 import os
 import glob
-from rembg import remove
+from rembg import remove, new_session
 from PIL import Image
 
 def main():
@@ -13,6 +13,8 @@ def main():
         print("No PNG files found in the directory.")
         return
         
+    session = new_session("isnet-anime")
+        
     for file_path in png_files:
         print(f"Processing: {file_path}")
         
@@ -21,7 +23,7 @@ def main():
             input_image = Image.open(file_path)
             
             # Remove background
-            output_image = remove(input_image)
+            output_image = remove(input_image, session=session)
             
             # Save the image, overwriting the original
             output_image.save(file_path)
