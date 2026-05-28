@@ -151,4 +151,31 @@ class UIController {
       container.appendChild(p);
     }
   }
+
+  // ── Custom Confirm Modal ──────────────────────────────
+  showConfirm(message) {
+    return new Promise(resolve => {
+      const modal = document.getElementById('confirm-modal');
+      const msgEl = document.getElementById('confirm-message');
+      const btnYes = document.getElementById('confirm-yes');
+      const btnNo = document.getElementById('confirm-no');
+
+      if (!modal) return resolve(window.confirm(message)); // Fallback
+
+      msgEl.textContent = message;
+      modal.classList.remove('hidden');
+
+      const cleanup = () => {
+        modal.classList.add('hidden');
+        btnYes.removeEventListener('click', onYes);
+        btnNo.removeEventListener('click', onNo);
+      };
+
+      const onYes = () => { cleanup(); resolve(true); };
+      const onNo = () => { cleanup(); resolve(false); };
+
+      btnYes.addEventListener('click', onYes);
+      btnNo.addEventListener('click', onNo);
+    });
+  }
 }

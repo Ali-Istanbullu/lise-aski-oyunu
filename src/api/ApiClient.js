@@ -11,18 +11,20 @@ class ApiClient {
    */
   constructor(baseUrl) {
     if (!baseUrl) throw new Error('[ApiClient] baseUrl gerekli.');
-    this._baseUrl = baseUrl.replace(/\/$/, '');
+    this._baseUrl  = baseUrl.replace(/\/$/, '');
     this._tokenKey = 'lise_aski_token';
+    // In-memory sahne cache — sahneler statik, session boyunca tutulur
+    this._sceneCache = new Map();
   }
 
-  // ── Token ─────────────────────────────────────────────
+  // ── Token ─────────────────────────────────────────────────────
   getToken()          { return localStorage.getItem(this._tokenKey); }
   setToken(token)     { localStorage.setItem(this._tokenKey, token); }
-  clearToken()        { localStorage.removeItem(this._tokenKey); }
+  clearToken()        { localStorage.removeItem(this._tokenKey); this._sceneCache.clear(); }
   isLoggedIn()        { return !!this.getToken(); }
 
   // ── Core HTTP ─────────────────────────────────────────
-  async request(path, options = {}) {
+  async request(path, options = {}, timeoutMs = 20000) {
     const token = this.getToken();
     const headers = {
       'Content-Type': 'application/json',
@@ -30,11 +32,29 @@ class ApiClient {
       ...options.headers,
     };
 
-    const res = await fetch(`${this._baseUrl}${path}`, { ...options, headers });
-    const data = await res.json();
+    const controller = new AbortController();
+    const timeoutId  = setTimeout(() => controller.abort(), timeoutMs);
 
-    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-    return data;
+    try {
+      const res  = await fetch(`${this._baseUrl}${path}`, {
+        ...options,
+        headers,
+        signal: controller.signal,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      return data;
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        throw new Error(
+          'Sunucu yanıt vermedi. Sunucu uyku modundan uyanıyor olabilir — ' +
+          'lütfen birkaç saniye bekleyip tekrar dene.'
+        );
+      }
+      throw err;
+    } finally {
+      clearTimeout(timeoutId);
+    }
   }
 
   // ── Auth Endpoints ────────────────────────────────────
@@ -77,8 +97,16 @@ class ApiClient {
   }
 
   async gameGetScene(sceneId, choices = {}) {
+    const cacheKey = `scene_${sceneId}`;
+    // Cache hit — anında dön
+    if (this._sceneCache.has(cacheKey)) {
+      return this._sceneCache.get(cacheKey);
+    }
     const q = `?choices=${encodeURIComponent(JSON.stringify(choices))}`;
-    return this.request(`/api/game/scene/${sceneId}${q}`);
+    const data = await this.request(`/api/game/scene/${sceneId}${q}`);
+    // Cache'e yaz — sahneler hiç değişmez
+    this._sceneCache.set(cacheKey, data);
+    return data;
   }
 
   async gameMakeChoice(sceneId, choiceIndex, currentChoices = {}) {

@@ -45,7 +45,8 @@ class GameEngine {
   // ── Yeni Oyun ─────────────────────────────────────────
   async startNewGame() {
     if (this._state.saveData?.sceneId > 1) {
-      if (!confirm('Mevcut kayıt silinecek. Emin misin?')) return;
+      const confirmed = await window._app.showConfirm('Mevcut kayıt silinecek. Yeni oyuna başlamak istediğinden emin misin?');
+      if (!confirmed) return;
       try { await this._game.resetSave(); } catch (_) {}
     }
     this._state = this._defaultState();
