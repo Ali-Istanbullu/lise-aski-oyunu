@@ -61,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     startNewGame:   ()      => Container.resolve('gameEngine').startNewGame(),
     continueGame:   ()      => Container.resolve('gameEngine').continueGame(),
     goToMenu:       ()      => Container.resolve('gameEngine').goToMenu(),
+    showConfirm:    (msg)   => Container.resolve('uiController').showConfirm(msg),
   };
 
   // ── 8. Parçacık animasyonu başlat ────────────────────
