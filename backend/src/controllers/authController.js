@@ -53,11 +53,11 @@ function logout(req, res) {
 /**
  * GET /api/auth/me
  */
-function me(req, res, next) {
+async function me(req, res, next) {
   try {
     const db = getDatabase();
     const userRepo = new UserRepository(db);
-    const user = userRepo.findById(req.userId);
+    const user = await userRepo.findById(req.userId);
     if (!user) return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
     res.json({ user });
   } catch (err) {

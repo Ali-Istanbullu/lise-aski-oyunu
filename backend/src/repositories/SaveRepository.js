@@ -5,7 +5,7 @@
 
 class SaveRepository {
   /**
-   * @param {import('better-sqlite3').Database} db
+   * @param {import('pg').Pool} db
    */
   constructor(db) {
     this.db = db;
@@ -14,19 +14,18 @@ class SaveRepository {
   /**
    * Kullanıcı kayıdını getir
    * @param {number} userId
-   * @returns {object|undefined}
+   * @returns {Promise<object|undefined>}
    */
-  findByUserId(userId) {
-    const row = this.db
-      .prepare('SELECT * FROM game_saves WHERE user_id = ?')
-      .get(userId);
+  async findByUserId(userId) {
+    const res = await this.db.query('SELECT * FROM game_saves WHERE user_id = $1', [userId]);
+    const row = res.rows[0];
 
     if (!row) return null;
     return {
       userId: row.user_id,
       sceneId: row.scene_id,
-      choices: JSON.parse(row.choices),
-      flags: JSON.parse(row.flags),
+      choices: row.choices,
+      flags: row.flags,
       updatedAt: row.updated_at,
     };
   }
@@ -38,27 +37,24 @@ class SaveRepository {
    * @param {object} choices
    * @param {object} flags
    */
-  upsert(userId, sceneId, choices, flags) {
-    const stmt = this.db.prepare(`
+  async upsert(userId, sceneId, choices, flags) {
+    await this.db.query(`
       INSERT INTO game_saves (user_id, scene_id, choices, flags, updated_at)
-      VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
-      ON CONFLICT(user_id) DO UPDATE SET
-        scene_id = excluded.scene_id,
-        choices = excluded.choices,
-        flags = excluded.flags,
+      VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+      ON CONFLICT (user_id) DO UPDATE SET
+        scene_id = EXCLUDED.scene_id,
+        choices = EXCLUDED.choices,
+        flags = EXCLUDED.flags,
         updated_at = CURRENT_TIMESTAMP
-    `);
-    stmt.run(userId, sceneId, JSON.stringify(choices), JSON.stringify(flags));
+    `, [userId, sceneId, choices, flags]);
   }
 
   /**
-   * Kayıdi sıfırla
+   * Kayıdı sıfırla
    * @param {number} userId
    */
-  reset(userId) {
-    this.db
-      .prepare('DELETE FROM game_saves WHERE user_id = ?')
-      .run(userId);
+  async reset(userId) {
+    await this.db.query('DELETE FROM game_saves WHERE user_id = $1', [userId]);
   }
 }
 

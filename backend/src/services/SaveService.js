@@ -19,8 +19,8 @@ class SaveService {
    * @param {number} userId
    * @returns {object}
    */
-  getSave(userId) {
-    const save = this.saveRepository.findByUserId(userId);
+  async getSave(userId) {
+    const save = await this.saveRepository.findByUserId(userId);
     if (save) return save;
 
     return {
@@ -39,18 +39,18 @@ class SaveService {
    * @param {object} choices - Yapılan seçimler { sceneId: choiceIndex }
    * @param {object} flags - Oyun bayrakları
    */
-  updateSave(userId, sceneId, choices = {}, flags = {}) {
+  async updateSave(userId, sceneId, choices = {}, flags = {}) {
     this._validateSave(sceneId, choices, flags);
-    this.saveRepository.upsert(userId, sceneId, choices, flags);
-    return this.saveRepository.findByUserId(userId);
+    await this.saveRepository.upsert(userId, sceneId, choices, flags);
+    return await this.saveRepository.findByUserId(userId);
   }
 
   /**
    * Kayıdi sıfırla (yeni oyun)
    * @param {number} userId
    */
-  resetSave(userId) {
-    this.saveRepository.reset(userId);
+  async resetSave(userId) {
+    await this.saveRepository.reset(userId);
     return { message: 'Kayıt silindi. Yeni oyun başlatılabilir.' };
   }
 

@@ -30,14 +30,14 @@ class AuthService {
   async register(username, email, password) {
     this._validateRegistration(username, email, password);
 
-    const existingEmail = this.userRepository.findByEmail(email);
+    const existingEmail = await this.userRepository.findByEmail(email);
     if (existingEmail) throw new Error('Bu e-mail adresi zaten kullanımda.');
 
-    const existingUsername = this.userRepository.findByUsername(username);
+    const existingUsername = await this.userRepository.findByUsername(username);
     if (existingUsername) throw new Error('Bu kullanıcı adı zaten alınmış.');
 
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-    const user = this.userRepository.create({ username, email, passwordHash });
+    const user = await this.userRepository.create({ username, email, passwordHash });
     const token = this._generateToken(user.id);
 
     return { user, token };
@@ -53,7 +53,7 @@ class AuthService {
   async login(email, password) {
     if (!email || !password) throw new Error('E-mail ve şifre gereklidir.');
 
-    const user = this.userRepository.findByEmail(email);
+    const user = await this.userRepository.findByEmail(email);
     if (!user) throw new Error('E-mail veya şifre hatalı.');
 
     const isValid = await bcrypt.compare(password, user.password_hash);

@@ -1,66 +1,69 @@
 /**
- * database.js — Singleton DB bağlantısı
+ * database.js — Singleton PostgreSQL bağlantısı (Supabase)
  * SOLID: Single Responsibility — Sadece veritabanı bağlantısını yönetir
  */
-const Database = require('better-sqlite3');
-const path = require('path');
-const fs = require('fs');
+const { Pool } = require('pg');
 
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, '../../data/game.db');
-
-let instance = null;
+let pool = null;
 
 /**
- * Singleton DB instance döner. Test ortamında in-memory kullanır.
- * @returns {Database} better-sqlite3 instance
+ * Singleton DB havuzunu döner.
+ * @returns {Pool} pg.Pool instance
  */
 function getDatabase() {
-  if (instance) return instance;
+  if (pool) return pool;
 
-  const isTest = process.env.NODE_ENV === 'test';
-  const dbPath = isTest ? ':memory:' : DB_PATH;
-
-  if (!isTest) {
-    const dir = path.dirname(dbPath);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error('DATABASE_URL environment variable is missing.');
   }
 
-  instance = new Database(dbPath);
-  instance.pragma('journal_mode = WAL');
-  instance.pragma('foreign_keys = ON');
+  pool = new Pool({
+    connectionString,
+    // Supabase gibi harici bağlantılarda SSL genellikle gereklidir.
+    // Ancak test ortamlarında devre dışı bırakılabilir.
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  });
 
-  _initSchema(instance);
-  return instance;
+  _initSchema(pool);
+  return pool;
 }
 
-function _initSchema(db) {
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      username TEXT UNIQUE NOT NULL,
-      email TEXT UNIQUE NOT NULL,
-      password_hash TEXT NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    );
+/**
+ * Tabloları oluşturur (PostgreSQL formatında)
+ * @param {Pool} dbPool 
+ */
+async function _initSchema(dbPool) {
+  try {
+    await dbPool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(255) UNIQUE NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password_hash VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
 
-    CREATE TABLE IF NOT EXISTS game_saves (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
-      scene_id INTEGER NOT NULL DEFAULT 1,
-      choices TEXT NOT NULL DEFAULT '{}',
-      flags TEXT NOT NULL DEFAULT '{}',
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-      UNIQUE(user_id)
-    );
-  `);
+      CREATE TABLE IF NOT EXISTS game_saves (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL UNIQUE,
+        scene_id INTEGER NOT NULL DEFAULT 1,
+        choices JSONB NOT NULL DEFAULT '{}'::jsonb,
+        flags JSONB NOT NULL DEFAULT '{}'::jsonb,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      );
+    `);
+  } catch (err) {
+    console.error('[DB] Schema initialization error:', err.message);
+  }
 }
 
 /** Test sonrası instance sıfırla */
-function resetDatabase() {
-  if (instance) {
-    instance.close();
-    instance = null;
+async function resetDatabase() {
+  if (pool) {
+    await pool.end();
+    pool = null;
   }
 }
 

@@ -1,12 +1,12 @@
 /**
  * UserRepository.js — Kullanıcı veri erişim katmanı
  * SOLID: Single Responsibility — Sadece user CRUD işlemleri
- * SOLID: Dependency Inversion — db inject edilir (test edilebilir)
+ * SOLID: Dependency Inversion — db havuzu inject edilir (test edilebilir)
  */
 
 class UserRepository {
   /**
-   * @param {import('better-sqlite3').Database} db
+   * @param {import('pg').Pool} db
    */
   constructor(db) {
     this.db = db;
@@ -15,47 +15,47 @@ class UserRepository {
   /**
    * E-mail ile kullanıcı bul
    * @param {string} email
-   * @returns {object|undefined}
+   * @returns {Promise<object|undefined>}
    */
-  findByEmail(email) {
-    return this.db
-      .prepare('SELECT * FROM users WHERE email = ?')
-      .get(email);
+  async findByEmail(email) {
+    const res = await this.db.query('SELECT * FROM users WHERE email = $1', [email]);
+    return res.rows[0];
   }
 
   /**
    * Username ile kullanıcı bul
    * @param {string} username
-   * @returns {object|undefined}
+   * @returns {Promise<object|undefined>}
    */
-  findByUsername(username) {
-    return this.db
-      .prepare('SELECT * FROM users WHERE username = ?')
-      .get(username);
+  async findByUsername(username) {
+    const res = await this.db.query('SELECT * FROM users WHERE username = $1', [username]);
+    return res.rows[0];
   }
 
   /**
    * ID ile kullanıcı bul
    * @param {number} id
-   * @returns {object|undefined}
+   * @returns {Promise<object|undefined>}
    */
-  findById(id) {
-    return this.db
-      .prepare('SELECT id, username, email, created_at FROM users WHERE id = ?')
-      .get(id);
+  async findById(id) {
+    const res = await this.db.query(
+      'SELECT id, username, email, created_at FROM users WHERE id = $1',
+      [id]
+    );
+    return res.rows[0];
   }
 
   /**
    * Yeni kullanıcı oluştur
    * @param {object} param0
-   * @returns {object} Oluşturulan kullanıcı
+   * @returns {Promise<object>} Oluşturulan kullanıcı
    */
-  create({ username, email, passwordHash }) {
-    const stmt = this.db.prepare(
-      'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)'
+  async create({ username, email, passwordHash }) {
+    const res = await this.db.query(
+      'INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id, username, email, created_at',
+      [username, email, passwordHash]
     );
-    const result = stmt.run(username, email, passwordHash);
-    return this.findById(result.lastInsertRowid);
+    return res.rows[0];
   }
 }
 

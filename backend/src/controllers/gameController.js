@@ -19,10 +19,10 @@ const storyService = new StoryService();
 /**
  * GET /api/game/save
  */
-function getSave(req, res, next) {
+async function getSave(req, res, next) {
   try {
     const saveService = _getSaveService();
-    const save = saveService.getSave(req.userId);
+    const save = await saveService.getSave(req.userId);
     res.json({ save });
   } catch (err) {
     next(err);
@@ -32,11 +32,11 @@ function getSave(req, res, next) {
 /**
  * POST /api/game/save
  */
-function updateSave(req, res, next) {
+async function updateSave(req, res, next) {
   try {
     const { sceneId, choices, flags } = req.body;
     const saveService = _getSaveService();
-    const save = saveService.updateSave(req.userId, sceneId, choices, flags);
+    const save = await saveService.updateSave(req.userId, sceneId, choices, flags);
     res.json({ message: 'Kayıt güncellendi.', save });
   } catch (err) {
     err.statusCode = 400;
@@ -47,10 +47,10 @@ function updateSave(req, res, next) {
 /**
  * DELETE /api/game/save
  */
-function resetSave(req, res, next) {
+async function resetSave(req, res, next) {
   try {
     const saveService = _getSaveService();
-    const result = saveService.resetSave(req.userId);
+    const result = await saveService.resetSave(req.userId);
     res.json(result);
   } catch (err) {
     next(err);
